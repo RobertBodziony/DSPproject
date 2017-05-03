@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    android:gravity="center|top"
+    tools:context="com.example.keczaps.dsptest.MainActivity">
+
+    <GridLayout
+        android:id="@+id/buttons_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="2">
+
+        <TextView
+            android:id="@+id/rec_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/recording_off_text"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/pitch_textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/pitch_level"
+            android:paddingBottom="10dp"/>
+
+
+        <Button
+            android:id="@+id/rec_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:layout_gravity="fill_horizontal"
+            android:text="@string/rec_btn_text" />
+
+        <Button
+            android:id="@+id/play_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:layout_gravity="fill_horizontal"
+            android:text="@string/play_btn_text" />
+
+        <Button
+            android:id="@+id/atn_direct_enable"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:layout_gravity="fill_horizontal"
+            android:text="@string/enable_p2p_button" />
+
+        <Button
+            android:id="@+id/atn_direct_discover"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:gravity="center"
+            android:layout_gravity="fill_horizontal"
+            android:text="@string/discover_peers_button" />
+    </GridLayout>
+
+
+    <fragment
+        class="com.example.keczaps.dsptest.DeviceListFragment"
+        android:id="@+id/frag_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <!-- Preview: layout=@layout/row_devices -->
+    </fragment>
+    <fragment
+        class="com.example.keczaps.dsptest.DeviceDetailFragment"
+        android:id="@+id/frag_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+        <!-- Preview: layout=@layout/device_detail -->
+    </fragment>
+
+</LinearLayout>
