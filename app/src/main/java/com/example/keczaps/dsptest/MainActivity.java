@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     private BroadcastReceiver mReceiver = null;
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
-    private TextView rec_textView, pitch_textView;
+    private TextView rec_textView, pitch_textView,last_detected_t,detected_t_difference;
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 432;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXT_STR = 433;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXT_STR = 434;
@@ -54,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     private RecManager recManager;
     private PlayManager playManager;
     private List peers = new ArrayList();
+    private SoundDetector soundDetector;
+
 
     public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
         this.isWifiP2pEnabled = isWifiP2pEnabled;
@@ -86,6 +88,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         p2p_discover.setOnClickListener(this);
         rec_textView = (TextView) findViewById(R.id.rec_textView);
         pitch_textView = (TextView) findViewById(R.id.pitch_textView);
+        last_detected_t = (TextView) findViewById(R.id.last_detected_time);
+        detected_t_difference = (TextView) findViewById(R.id.detected_time_difference);
         pitch_textView.setText(getResources().getString(R.string.playing_off_text));
         checkAppPerm(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         checkAppPerm(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_WRITE_EXT_STR);
@@ -96,9 +100,10 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         checkAppPerm(Manifest.permission.ACCESS_NETWORK_STATE, MY_PERMISSIONS_REQUEST_ACCESS_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_NETWORK_STATE, MY_PERMISSIONS_REQUEST_CHANGE_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, MY_PERMISSIONS_REQUEST_CHANGE_MULT_STATE);
-        recManager = new RecManager();
+        //recManager = new RecManager(last_detected_t,detected_t_difference);
         playManager = new PlayManager(5);
-        recManager.prepareDirectory("DSPtest");
+        //soundDetector = new SoundDetector("SoundDetector1",recManager,last_detected_t,detected_t_difference);
+
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -175,16 +180,21 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                     rec_textView.setText(R.string.recording_on_text);
                     rec_textView.setTextColor(getResources().getColor(R.color.color_rec_on));
                     if(recManager == null){
-                        recManager = new RecManager();
+                        recManager = new RecManager(last_detected_t,detected_t_difference);
                         recManager.start();
+                        soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference);
+                        soundDetector.start();
+                        showToast("RecManager null");
                     } else {
                         recManager.start();
+                        soundDetector.start();
                     }
-                    //recManager.startRecording();
                 } else {
                     rec_textView.setText(getResources().getString(R.string.recording_off_text));
                     rec_textView.setTextColor(getResources().getColor(R.color.color_rec_off));
                     recManager.stopRecording();
+                    soundDetector.stopRecording();
+                    soundDetector = null;
                     recManager = null;
                 }
 
@@ -193,9 +203,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                 if (pitch_textView.getText().equals(getResources().getString(R.string.playing_off_text))) {
                     pitch_textView.setText(R.string.playing_on_text);
                     pitch_textView.setTextColor(getResources().getColor(R.color.color_rec_on));
-                    //SoundDetector soundDetector = new SoundDetector("SoundDetector1");
-                    //soundDetector.run();
-                    //showToast("soundDetector executed.");
                     playManager.startPlaying();
                 } else {
                     pitch_textView.setText(getResources().getString(R.string.playing_off_text));

@@ -1,53 +1,168 @@
 package com.example.keczaps.dsptest;
 
-
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.MediaRecorder;
 import android.os.Environment;
+import android.os.SystemClock;
 import android.util.Log;
+import android.os.Handler;
+import android.widget.TextView;
 
 import com.musicg.wave.Wave;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
+import java.util.Date;
 
 public class SoundDetector extends Thread {
 
-    public SoundDetector(String name) {
+    private double[] lagArray,waved,wave1d;
+    private byte[] wave1b;
+    private Wave wave1;
+    private int maxIndex = 0;
+    private String test1Path,test2Path;
+    private double t_last_det=0,t_now_det=0,diff,t_lastTEMP, t_nowTEMP, diffTEMP ;
+    private RecManager recManager1 = null;
+    private AudioRecord mAudioRecord;
+    private Handler handler=new Handler();
+    private TextView last_detected_TV,diff_detected_TV;
+    private boolean first = false,isRecording=false;
+
+    public SoundDetector(String name,TextView last_detected_t,TextView diff_detected) {
         super(name);
+        //test1Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/test1full2048.wav";
+        //wave1d = byte2double(wave1b);
+        //Wave wave1 = new Wave(test2Path);
+        //wave1b = wave1.getBytes();
+
+        test2Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/testgenerated5ms.wav";
+        Wave wave = new Wave(test2Path);
+        this.mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_IN_MONO,
+                AudioFormat.ENCODING_PCM_16BIT, 4096);
+        byte[] waveb = wave.getBytes();
+        Log.i("WaveAndWave1 "," length waveB = "+waveb.length);
+        waved = byte2double(waveb);
+        Log.i("WaveAndWave1 "," length waveD = "+waved.length);
+        this.last_detected_TV = last_detected_t;
+        this.diff_detected_TV = diff_detected;
+        this.wave1b = new byte[4096];
     }
 
     public void run() {
-        String test1Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/test1.wav";
-        String test4Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/testGenerated5ms.wav";
-        Wave wave = new Wave(test1Path);
-        Wave wave1 = new Wave(test4Path);
-        byte[] waveb = wave.getBytes();
-        byte[] wave1b = wave1.getBytes();
-        Log.i("WaveAndWave1 "," length wave = "+waveb.length+" | length waveGen5ms = "+wave1b.length);
+        Log.e("SoundDetector ", "STARTED");
+        startRecord();
+        while (isRecording) {
+            //long t = SystemClock.currentThreadTimeMillis();
+            mAudioRecord.read(wave1b,0,4096);
+
+            wave1d = byte2double(wave1b);
+            long t = SystemClock.currentThreadTimeMillis();
+            Log.e("XCORR TIME START ", ""+t);
+            double[] result = xcorr(wave1d, waved);
+            long t2 = SystemClock.currentThreadTimeMillis();
+            Log.e("XCORR TIME END   ", "" + t2);
+            Log.e("XCORR TIME DIFF  ", "" + (t2 - t));
+            //Log.i("WaveAndWave1 ", " length wave = " + waved.length + " | length waveGen5ms = " + wave1d.length);
+            //Log.i("Max of XCORR ", " maxNum : " + result[maxIndex] + " | IndexOfMax : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + (((double) (maxIndex - waved.length)) / 44100));
+            if(result[maxIndex] > 25000) {
+                Log.i("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / 44100)*1000));
+                if(t_now_det != 0){
+                    t_lastTEMP = t_now_det;
+                    t_nowTEMP = t+((((double) (maxIndex - waved.length)) / 44100)*1000);
+                    diffTEMP = t_nowTEMP - t_lastTEMP;
+                    if(diffTEMP < 500){
+                        Log.i("SIGNAL DETECTED ", "OUTLIER CATCHED LIKE POKEMON!");
+                    } else {
+                        t_last_det = t_now_det;
+                        t_now_det = t+((((double) (maxIndex - waved.length)) / 44100)*1000);
+                        diff = t_now_det - t_last_det;
+                        first = false;
+                        Log.i("XCORR DETECTED ", "TIME Difference : "+t_now_det+" - ("+t_last_det+") = " + diff);
+                    }
+                } else {
+                    t_now_det = t-((((double) (maxIndex - waved.length)) / 44100)*1000);
+                    first = true;
+                    Log.i("XCORR DETECTED ", "TIME : "+(t+((((double) (maxIndex - waved.length)) / 44100)*1000)));
+                }
+
+                handler.post(new Runnable(){
+                    public void run(){
+                        if(!first) {
+                            last_detected_TV.setText(String.format("%.4f", t_last_det));
+                            diff_detected_TV.setText(String.format("%.4f", diff));
+                        } else {
+                            last_detected_TV.setText(String.format("%.4f", t_now_det));
+                        }
+                    }
+                });
+
+            } else {
+                Log.i("XCORR NOT DETECTED ", " maxNum : " + result[maxIndex]);
+            }
+        }
     }
 
-    public static double getFloat64(byte[] bytes)
-    {
-        return Double.longBitsToDouble(((bytes[0] & 0xFFL) << 56)
-                | ((bytes[1] & 0xFFL) << 48)
-                | ((bytes[2] & 0xFFL) << 40)
-                | ((bytes[3] & 0xFFL) << 32)
-                | ((bytes[4] & 0xFFL) << 24)
-                | ((bytes[5] & 0xFFL) << 16)
-                | ((bytes[6] & 0xFFL) << 8)
-                | ((bytes[7] & 0xFFL) << 0));
+    public void startRecord(){
+        try{
+            mAudioRecord.startRecording();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        isRecording = true;
     }
 
-    /**
-     * Convolves sequences a and b.  The resulting convolution has
-     * length a.length+b.length-1.
-     */
-    public static double[] conv(float[] a, float[] b)
+    public void stopRecording(){
+        isRecording = false;
+        try{
+            mAudioRecord.stop();
+            mAudioRecord.release();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void printResultToTextFile(double[] res){
+        try {
+            String filename= Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/test1TEXT.txt";;
+            FileWriter fw = new FileWriter(filename,false);
+                fw.write("XCORR ARRAY \n");
+            for(int i = 0;i<res.length-1;i++) {
+                fw.write(Double.toString(res[i])+";\n");
+            }
+                fw.write("LAG ARRAY \n");
+
+            for(int i = 0;i<lagArray.length-1;i++) {
+                fw.write(Double.toString(lagArray[i])+";\n");
+            }
+            fw.close();
+        } catch (IOException e) {
+            System.out.println("NOPE.");
+        }
+    }
+    private double[] byte2double(byte[] data){
+        double d[] = new double[data.length/2];
+        ByteBuffer buf = ByteBuffer.wrap(data, 0, data.length);
+        buf.order(ByteOrder.LITTLE_ENDIAN);
+        int counter = 0;
+        while (buf.remaining() >= 2) {
+            double s = buf.getShort();
+            d[counter] = s/1000;
+            counter++;
+        }
+        return d;
+    }
+
+    public static double[] conv(double[] a, double[] b)
     {
         double[] y = new double[a.length+b.length-1];
 
-        // make sure that a is the shorter sequence
         if(a.length > b.length)
         {
-            float[] tmp = a;
+            double[] tmp = a;
             a = b;
             b = tmp;
         }
@@ -56,21 +171,16 @@ public class SoundDetector extends Thread {
         {
             y[lag] = 0;
 
-            // where do the two signals overlap?
             int start = 0;
-            // we can't go past the left end of (time reversed) a
             if(lag > a.length-1)
                 start = lag-a.length+1;
 
             int end = lag;
-            // we can't go past the right end of b
             if(end > b.length-1)
                 end = b.length-1;
 
-            //System.out.println("lag = " + lag +": "+ start+" to " + end);
             for(int n = start; n <= end; n++)
             {
-                //System.out.println("  ai = " + (lag-n) + ", bi = " + n);
                 y[lag] += b[n]*a[lag-n];
             }
         }
@@ -78,38 +188,21 @@ public class SoundDetector extends Thread {
         return(y);
     }
 
-    /**
-     * Computes the cross correlation between sequences a and b.
-     */
-    public static double[] xcorr(float[] a, float[] b)
+    public  double[] xcorr(double[] a, double[] b)
     {
         int len = a.length;
         if(b.length > a.length)
             len = b.length;
 
         return xcorr(a, b, len-1);
-
-        // // reverse b in time
-        // double[] brev = new double[b.length];
-        // for(int x = 0; x < b.length; x++)
-        //     brev[x] = b[b.length-x-1];
-        //
-        // return conv(a, brev);
     }
 
-    /**
-     * Computes the auto correlation of a.
-     */
-    public static double[] xcorr(float[] a)
+    public double[] xcorr(double[] a)
     {
         return xcorr(a, a);
     }
 
-    /**
-     * Computes the cross correlation between sequences a and b.
-     * maxlag is the maximum lag to
-     */
-    public static double[] xcorr(float[] a, float[] b, int maxlag)
+    public double[] xcorr(double[] a, double[] b, int maxlag)
     {
         double[] y = new double[2*maxlag+1];
         Arrays.fill(y, 0);
@@ -123,30 +216,26 @@ public class SoundDetector extends Thread {
             if(idx >= y.length)
                 break;
 
-            // where do the two signals overlap?
             int start = 0;
-            // we can't start past the left end of b
             if(lag < 0)
             {
-                //System.out.println("b");
                 start = -lag;
             }
 
             int end = a.length-1;
-            // we can't go past the right end of b
             if(end > b.length-lag-1)
             {
                 end = b.length-lag-1;
-                //System.out.println("a "+end);
             }
 
-            //System.out.println("lag = " + lag +": "+ start+" to " + end+"   idx = "+idx);
             for(int n = start; n <= end; n++)
             {
-                //System.out.println("  bi = " + (lag+n) + ", ai = " + n);
                 y[idx] += a[n]*b[lag+n];
             }
-            //System.out.println(y[idx]);
+            double newnumber = y[idx];
+            if ((newnumber > y[maxIndex])) {
+                maxIndex = idx;
+            }
         }
 
         return(y);

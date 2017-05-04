@@ -2,11 +2,13 @@
     <string name="app_name">DSPtest</string>
     <string name="rec_btn_text">REC</string>
     <string name="play_btn_text">PLAY</string>
-    <string name="recording_off_text">RECORD OFF</string>
-    <string name="recording_on_text">RECORD ON</string>
+    <string name="recording_off_text">REC OFF</string>
+    <string name="recording_on_text">REC ON</string>
     <string name="playing_off_text">PLAY OFF</string>
     <string name="playing_on_text">PLAY ON</string>
     <string name="pitch_level">PITCH LEVEL :</string>
+    <string name="l_detected_time">DET TIME</string>
+    <string name="l_detected_difference">TIME DIFF</string>
     <string name="connect_peer_button">CONNECT</string>
     <string name="disconnect_peer_button">DISCONNECT</string>
     <string name="get_data_button">SEND</string>
