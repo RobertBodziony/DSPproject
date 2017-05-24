@@ -5,7 +5,6 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.util.Log;
-import android.widget.TextView;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,31 +19,30 @@ public class RecManager extends Thread {
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
     private boolean isRecording = false;
-    private WaveFormatManager waveFormatManager = null;
-    private String filePath;
-    private AudioRecord audioRecord;
     private int frameByteSize = 4096;
     private byte[] buffer;
-    //private SoundDetector soundDetector;
+    private String filePath;
+    private WaveFormatManager waveFormatManager = null;
+    private AudioRecord audioRecord;
 
-    public RecManager(TextView last_detected_t,TextView diff_detected){
+    public RecManager(){
         int recBufSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
         if(recBufSize > frameByteSize){
-            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS,
-                RECORDER_AUDIO_ENCODING, recBufSize);
+            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, recBufSize);
         } else {
-            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS,
-                    RECORDER_AUDIO_ENCODING, frameByteSize);
+            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, frameByteSize);
         }
         this.buffer = new byte[frameByteSize];
         this.waveFormatManager = new WaveFormatManager();
-        //soundDetector = new SoundDetector("SoundDetector1",this,last_detected_t,diff_detected);
         prepareDirectory();
-        filePath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/";
+        filePath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/";
     }
 
-    public boolean isRecording(){
-        return this.isAlive() && isRecording;
+
+    public void run() {
+        Log.e("RecManager ", "STARTED");
+        startRecord();
+        writeAudioDataToFile();
     }
 
     public void startRecord(){
@@ -66,25 +64,15 @@ public class RecManager extends Thread {
         }
     }
 
-    public byte[] getFrameBytes(){
-        if(isRecording){
-        audioRecord.read(buffer, 0, frameByteSize);
-        }
-        return buffer;
+    public boolean isRecording(){
+        return this.isAlive() && isRecording;
     }
 
-    public void run() {
-        Log.e("RecManager ", "STARTED");
-        startRecord();
-        writeAudioDataToFile();
-    }
-
-
-    void prepareDirectory() {
+    private void prepareDirectory() {
 
         try {
             Log.d("Starting", "Checking up directory");
-            File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "DSPtest");
+            File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "DSPtestFiles");
 
             if (! mediaStorageDir.exists()) {
                 if (! mediaStorageDir.mkdir()) {

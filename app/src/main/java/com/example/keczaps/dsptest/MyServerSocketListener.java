@@ -1,6 +1,5 @@
 package com.example.keczaps.dsptest;
 
-import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 
 public class MyServerSocketListener {
     private ScheduledExecutorService serverScheduleTaskExecutor = null;
-    private Context context;
     private TextView statusText;
     private String inMsg = null,host;
     private int serverPort;
@@ -28,8 +26,7 @@ public class MyServerSocketListener {
     private PlayManager playManager;
 
 
-    MyServerSocketListener(Context context, View statusText, Handler handler, PlayManager playManager, int serverPort) {
-        this.context = context;
+    MyServerSocketListener(View statusText, Handler handler, PlayManager playManager, int serverPort) {
         this.statusText = (TextView) statusText;
         this.handler = handler;
         this.playManager = playManager;
@@ -74,6 +71,7 @@ public class MyServerSocketListener {
         }, 0, 5, TimeUnit.MILLISECONDS);
     }
 
+    // NOT WORKING - IMPLEMENTED IN NOT PROPER WAY????
 
     void sendServerSocketMessage() {
         if(serverSocket != null) {

@@ -62,7 +62,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         super.onActivityCreated(savedInstanceState);
         mhandler = new Handler();
         mPlayerManager = new PlayManager(7);
-        mMyServerSocketListener = new MyServerSocketListener(getActivity(),mContentView.findViewById(R.id.status_text),mhandler,mPlayerManager,SERVER_PORT);
+        mMyServerSocketListener = new MyServerSocketListener(mContentView.findViewById(R.id.status_text),mhandler,mPlayerManager,SERVER_PORT);
     }
 
     @Override
@@ -114,7 +114,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
                             messageCount++;
                         } else {
                             TextView statusText = (TextView) mContentView.findViewById(R.id.status_text);
-                            //mMyServerSocketListener.sendServerSocketMessage();
                             Log.i("Server Send ", " send button pressed.");
                             statusText.setText("");
                         }
@@ -139,7 +138,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
         if (info.groupFormed && info.isGroupOwner) {
             Log.i("Server group formed "," I am a group owner - my address : " + info.groupOwnerAddress);
             mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.VISIBLE);
-            mContentView.findViewById(R.id.btn_start_client).setVisibility(View.VISIBLE);
             mMyServerSocketListener.startServerSocketListener();
             Log.i("Server socket listener "," Starterd. ");
             amIaGroupOwner = true;
@@ -149,9 +147,6 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             mContentView.findViewById(R.id.btn_disconnect).setVisibility(View.VISIBLE);
             ((TextView) mContentView.findViewById(R.id.status_text)).setText(getResources()
                     .getString(R.string.client_text));
-            //ClientMulticastAsyncTask mClientMulticastAsyncTask = new ClientMulticastAsyncTask(statusV);
-            //mClientMulticastAsyncTask.execute();
-            //Log.i("Client multicast "," ClientMulticastAsyncTask sent to queue.");
             amIaGroupOwner = false;
         }
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.GONE);
@@ -186,172 +181,5 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             Log.i("Reseting views ", " Server socket listener - CLOSED | Handler - NULL");
         }
         Log.i("Reseting views ", " Success.");
-    }
-
-
-    public class ClientMulticastAsyncTask extends AsyncTask<Void, TextView, String> {
-
-        private TextView textView1;
-        private byte[] data;
-
-        public ClientMulticastAsyncTask(TextView textView1) {
-            this.textView1 = textView1;
-            Log.i("Client multicast "," ClientMulticastAsyncTask created.");
-
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            Log.i("Client multicast "," Executing task.");
-            //Acquire the MulticastLock
-            WifiManager wifi = (WifiManager)  getActivity().getSystemService(Context.WIFI_SERVICE);
-            WifiManager.MulticastLock multicastLock = wifi.createMulticastLock("multicastLock");
-            multicastLock.setReferenceCounted(true);
-            multicastLock.acquire();
-
-            //Join a Multicast Group
-            InetAddress address=null;
-            MulticastSocket clientSocket=null;
-            int multicastServerPort = 1212;
-            try {
-                //address = InetAddress.getByName("224.0.0.1");
-                clientSocket = new MulticastSocket(multicastServerPort);
-                //clientSocket.joinGroup(address);
-                //clientSocket.setSoTimeout(10000);
-                clientSocket.setBroadcast(true);
-                InetSocketAddress socketAddress = new InetSocketAddress("224.0.0.1",1212);
-                NetworkInterface wifiDirectNetworkInterface = getWifiDirectNetworkInterface();
-                clientSocket.joinGroup(socketAddress, wifiDirectNetworkInterface);
-                //clientSocket.setNetworkInterface(wifiDirectNetworkInterface);
-
-                //clientSocket.joinGroup(new InetSocketAddress(address, multicastServerPort));
-                Log.i("Client multicast ", " Socket Group joined on address : " +address+" | Multicast socket created on port : " + multicastServerPort);
-            } catch (UnknownHostException e) {
-                Log.e("Client multicast ", " Socket error UnknownHostException : "+e.getMessage());
-            } catch (IOException e) {
-                Log.e("Client multicast ", " Socket error IOException : "+e.getMessage());
-            }
-
-            DatagramPacket packet=null;
-            byte[] buf = new byte[1];
-            packet = new DatagramPacket(buf, buf.length);
-            //Receive packet and get the Data
-            try {
-                clientSocket.receive(packet);
-                data = packet.getData();
-                Log.i("Server broadcast : ", data[0] + "");
-            } catch (Exception e) {
-                Log.e("Client multicast ", "Socket receive error : "+e.getMessage());
-            }
-            multicastLock.release();
-
-            try {
-                clientSocket.leaveGroup(address);
-            } catch (IOException e) {
-                Log.e("Client multicast ", "Socket leave group error : "+e.getMessage());
-            }
-            clientSocket.close();
-            return data[0]+"";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            if(textView1 != null){
-                textView1.setText(result);
-            }
-        }
-
-    }
-
-    public class ServerMulticastAsyncTask extends AsyncTask<Void, View, String> {
-
-        public ServerMulticastAsyncTask() {
-            Log.i("Server multicast "," MulticastAsyncTask created.");
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-
-            int multicastServerPort =1212;
-            DatagramSocket socket=null;
-            try {
-                socket = new DatagramSocket(multicastServerPort);
-                Log.i("Server multicast ", " Socket Created.");
-            } catch (SocketException e) {
-                Log.e("Server multicast ", " Socket error : "+e.getMessage());
-            }
-            InetAddress group = null;
-            try {
-                group = InetAddress.getByName("224.0.0.1");
-            } catch (UnknownHostException e) {
-                socket.close();
-                Log.e("Server multicast ", " Socket CLOSED | " + e.getMessage());
-            }
-
-            byte[] buf = new byte[1];
-            buf[0] = 0;
-            DatagramPacket packet = new DatagramPacket(buf, buf.length, group, multicastServerPort);
-            try {
-                socket.send(packet);
-                Log.i("Server multicast ", " Sending Packet. Data : " + buf[0]);
-            } catch (IOException e) {
-                socket.close();
-                Log.e("Server multicast ", " Socket CLOSED | Error : " + e.getMessage());
-            }
-
-            socket.close();
-            Log.i("Server multicast ", " Socket CLOSED | Success?");
-            return "";
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            //do whatever ...
-        }
-    }
-
-    public static NetworkInterface getWifiDirectNetworkInterface() {
-
-        List<NetworkInterface> foundInterfaces = new ArrayList<>();
-
-        Enumeration<NetworkInterface> interfaceEnumeration = null;
-        try {
-            interfaceEnumeration = NetworkInterface
-                    .getNetworkInterfaces();
-        } catch (SocketException e) {
-            e.printStackTrace();
-        }
-
-        while (interfaceEnumeration != null && interfaceEnumeration.hasMoreElements
-                ()) {
-
-            NetworkInterface anInterface = interfaceEnumeration.nextElement();
-
-            if (anInterface.getName().contains("p2p")) {
-
-                foundInterfaces.add(anInterface);
-            }
-
-        }
-
-        for (int i = 0; i < foundInterfaces.size(); i++) {
-
-            NetworkInterface networkInterface = foundInterfaces.get(i);
-
-            Enumeration<InetAddress> inetAdresses = networkInterface.getInetAddresses();
-
-            for (InetAddress inetAddress : Collections.list(inetAdresses)) {
-
-                if (inetAddress instanceof Inet4Address) {
-
-                    return networkInterface;
-                }
-
-            }
-
-        }
-
-        return null;
-
     }
 }

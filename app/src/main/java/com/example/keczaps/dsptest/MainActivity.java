@@ -41,7 +41,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     private BroadcastReceiver mReceiver = null;
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
-    private TextView rec_textView, pitch_textView,last_detected_t,detected_t_difference;
+    private TextView last_detected_t,detected_t_difference;
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 432;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXT_STR = 433;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXT_STR = 434;
@@ -68,29 +68,27 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
 
         //  Indicates a change in the Wi-Fi Peer-to-Peer status.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
-
         // Indicates a change in the list of available peers.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
-
         // Indicates the state of Wi-Fi P2P connectivity has changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
-
         // Indicates this device's details have changed.
         intentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
 
         rec_btn = (Button) findViewById(R.id.rec_button);
         rec_btn.setOnClickListener(this);
+        rec_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
         play_btn = (Button) findViewById(R.id.play_button);
         play_btn.setOnClickListener(this);
+        play_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
         p2p_enable = (Button) findViewById(R.id.atn_direct_enable);
         p2p_enable.setOnClickListener(this);
+        p2p_enable.setTextColor(getResources().getColor(R.color.color_rec_off));
         p2p_discover = (Button) findViewById(R.id.atn_direct_discover);
         p2p_discover.setOnClickListener(this);
-        rec_textView = (TextView) findViewById(R.id.rec_textView);
-        pitch_textView = (TextView) findViewById(R.id.pitch_textView);
+        p2p_discover.setTextColor(getResources().getColor(R.color.color_rec_off));
         last_detected_t = (TextView) findViewById(R.id.last_detected_time);
         detected_t_difference = (TextView) findViewById(R.id.detected_time_difference);
-        pitch_textView.setText(getResources().getString(R.string.playing_off_text));
         checkAppPerm(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         checkAppPerm(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_WRITE_EXT_STR);
         checkAppPerm(Manifest.permission.READ_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_READ_EXT_STR);
@@ -100,50 +98,11 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         checkAppPerm(Manifest.permission.ACCESS_NETWORK_STATE, MY_PERMISSIONS_REQUEST_ACCESS_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_NETWORK_STATE, MY_PERMISSIONS_REQUEST_CHANGE_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, MY_PERMISSIONS_REQUEST_CHANGE_MULT_STATE);
-        //recManager = new RecManager(last_detected_t,detected_t_difference);
         playManager = new PlayManager(5);
-        //soundDetector = new SoundDetector("SoundDetector1",recManager,last_detected_t,detected_t_difference);
-
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
-        /*mReceiver = new WiFiDirectBroadcastReceiver(mManager, mChannel, this);
-
-        mManager.discoverPeers(mChannel, new WifiP2pManager.ActionListener() {
-            @Override
-            public void onSuccess() {
-                Log.e("Wi-Fi P2P","discoverPeers() #SUCCESS");
-            }
-
-            @Override
-            public void onFailure(int reasonCode) {
-                Log.e("Wi-Fi P2P : ","discoverPeers() #FAIL");
-            }
-        });*/
     }
-
-    /*private WifiP2pManager.PeerListListener peerListListener = new WifiP2pManager.PeerListListener() {
-        @Override
-        public void onPeersAvailable(WifiP2pDeviceList peerList) {
-
-            // Out with the old, in with the new.
-            peers.clear();
-            peers.addAll(peerList.getDeviceList());
-
-            Log.e("Wi-Fi P2P : ", "devices found");
-
-            // If an AdapterView is backed by this data, notify it
-            // of the change.  For instance, if you have a ListView of available
-            // peers, trigger an update.
-            //((WiFiPeerListAdapter) getListAdapter()).notifyDataSetChanged();
-            if (peers.size() == 0) {
-                Log.e("Wi-Fi P2P : ", "No devices found");
-                return;
-            }
-        }
-    };
-
-     register the broadcast receiver with the intent values to be matched */
     @Override
     protected void onResume() {
         super.onResume();
@@ -151,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         registerReceiver(mReceiver, intentFilter);
     }
 
-    /* unregister the broadcast receiver */
     @Override
     protected void onPause() {
         super.onPause();
@@ -176,22 +134,21 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         switch (v.getId()) {
             case R.id.rec_button:
 
-                if (rec_textView.getText().equals(getResources().getString(R.string.recording_off_text))) {
-                    rec_textView.setText(R.string.recording_on_text);
-                    rec_textView.setTextColor(getResources().getColor(R.color.color_rec_on));
-                    if(recManager == null){
-                        recManager = new RecManager(last_detected_t,detected_t_difference);
+                if (rec_btn.getText().equals(getResources().getString(R.string.recording_off_text))) {
+                    rec_btn.setText(R.string.recording_on_text);
+                    rec_btn.setTextColor(getResources().getColor(R.color.color_rec_on));
+                    if(soundDetector == null){
+                        recManager = new RecManager();
                         recManager.start();
                         soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference);
                         soundDetector.start();
-                        showToast("RecManager null");
                     } else {
                         recManager.start();
                         soundDetector.start();
                     }
                 } else {
-                    rec_textView.setText(getResources().getString(R.string.recording_off_text));
-                    rec_textView.setTextColor(getResources().getColor(R.color.color_rec_off));
+                    rec_btn.setText(getResources().getString(R.string.recording_off_text));
+                    rec_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
                     recManager.stopRecording();
                     soundDetector.stopRecording();
                     soundDetector = null;
@@ -200,13 +157,13 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
 
                 break;
             case R.id.play_button:
-                if (pitch_textView.getText().equals(getResources().getString(R.string.playing_off_text))) {
-                    pitch_textView.setText(R.string.playing_on_text);
-                    pitch_textView.setTextColor(getResources().getColor(R.color.color_rec_on));
+                if (play_btn.getText().equals(getResources().getString(R.string.playing_off_text))) {
+                    play_btn.setText(R.string.playing_on_text);
+                    play_btn.setTextColor(getResources().getColor(R.color.color_rec_on));
                     playManager.startPlaying();
                 } else {
-                    pitch_textView.setText(getResources().getString(R.string.playing_off_text));
-                    pitch_textView.setTextColor(getResources().getColor(R.color.color_rec_off));
+                    play_btn.setText(getResources().getString(R.string.playing_off_text));
+                    play_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
                     playManager.stopPlaying();
                 }
                 break;
@@ -340,6 +297,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     public void showToast(String message) {
         Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
     }
+
+    //###################################################### CONNECTION STUFF
 
     @Override
     public void onChannelDisconnected() {

@@ -16,22 +16,21 @@ import java.util.concurrent.TimeUnit;
 public class PlayManager{
 
     private ScheduledExecutorService scheduleTaskExecutor;
-    private double duration=0.1;
-    private int sampleRate=44100;
-    private double numSample=duration*sampleRate;
-    private double sample[]=new double[(int) numSample];
-    private double numSample2=2*sampleRate;
-    private byte[] generatedSnd= new byte[(int) numSample];
-    byte[] array1;
-    private Handler handler=new Handler();
-    private AudioTrack audioTrack;
+    private int sampleRate = 44100;
     private int threadPoolNumberForTask;
+    private double duration = 0.1;
+    private double numSample = duration*sampleRate;
+    private double sample[] = new double[(int) numSample];
+    private byte[] generatedSnd = new byte[(int) numSample];
+    private byte[] finalGeneratedSignal;
+    private Handler playHandler = new Handler();
+    private AudioTrack audioTrack;
     private boolean isPlaying = false;
 
     public PlayManager(int threadPoolNumberForTask) {
         this.threadPoolNumberForTask = threadPoolNumberForTask;
-        array1 = getWaveFileBytes();
-        //this.genTone();
+        finalGeneratedSignal = getWaveFileBytes();
+        //this.genTone(5000,6000);
     }
 
     public void startPlaying() {
@@ -41,7 +40,7 @@ public class PlayManager{
         scheduleTaskExecutor = Executors.newScheduledThreadPool(threadPoolNumberForTask);
         scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
             public void run() {
-                handler.post(new Runnable(){
+                playHandler.post(new Runnable(){
                     public void run(){
                         playSound();
                     }
@@ -57,13 +56,29 @@ public class PlayManager{
         scheduleTaskExecutor.shutdownNow();
     }
 
-    public void genTone(){
+    private void playSound(){
+        if(isPlaying){
+            audioTrack.stop();
+            audioTrack.release();
+            audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT, generatedSnd.length, AudioTrack.MODE_STATIC);
+        }
+        audioTrack.write(finalGeneratedSignal, 0, finalGeneratedSignal.length);
+        audioTrack.play();
+        isPlaying = true;
+    }
 
-        double freq1=5000,freq2=6000,instfreq=0,numerator;
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+
+    public void genTone(double freqDOWN,double freqUP){
+
+        double instfreq=0,numerator;
 
         for (int i=0;i<numSample; i++ ) {
             numerator = (double)(i)/numSample;
-            instfreq = freq1+(numerator*(freq2-freq1));
+            instfreq = freqDOWN+(numerator*(freqUP-freqDOWN));
             if ((i % 1000) == 0) {
                 Log.e("Current Freq:", String.format("Freq is:  %f at loop %d of %d", instfreq, i, (int)numSample));
             }
@@ -79,23 +94,9 @@ public class PlayManager{
         }
     }
 
-    private void playSound(){
-        if(isPlaying){
-            audioTrack.stop();
-            audioTrack.release();
-            audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT, generatedSnd.length, AudioTrack.MODE_STATIC);
-        }
-        audioTrack.write(array1, 0, array1.length);
-        audioTrack.play();
-        isPlaying = true;
-    }
-
-    public boolean isPlaying() {
-        return isPlaying;
-    }
 
     public byte[] getWaveFileBytes() {
-        Wave wave = new Wave(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/testGenerated5ms.wav");
+        Wave wave = new Wave(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/testGenerated5ms.wav");
         return wave.getBytes();
     }
 

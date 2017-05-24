@@ -1,7 +1,6 @@
 package com.example.keczaps.dsptest;
 
 import android.media.AudioFormat;
-import android.media.MediaRecorder;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,11 +10,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
 public class WaveFormatManager {
-
-    private static final int AUDIO_SOURCE = MediaRecorder.AudioSource.MIC;
-    private static final int SAMPLE_RATE = 44100; // Hz
-    private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
-    private static final int CHANNEL_MASK = AudioFormat.CHANNEL_IN_MONO;
 
     public WaveFormatManager() {
     }

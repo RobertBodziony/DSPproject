@@ -36,7 +36,6 @@ public class DataTransferService extends IntentService {
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        Context context = getApplicationContext();
         if (intent.getAction().equals(ACTION_SEND_DATA)) {
             Log.e("Service ", "I am in the service - ACTION_SEND_DATA.");
             String host = intent.getExtras().getString(EXTRAS_GROUP_OWNER_ADDRESS);

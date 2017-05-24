@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DSPtest</string>
+    <string name="app_name">LocTDOA</string>
     <string name="rec_btn_text">REC</string>
     <string name="play_btn_text">PLAY</string>
     <string name="recording_off_text">REC OFF</string>
