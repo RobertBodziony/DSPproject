@@ -22,7 +22,7 @@
             android:layout_width="150dp"
             android:layout_height="150dp"
             android:layout_weight="1"
-            android:src="@mipmap/ic_launcher_tdoa1"
+            android:src="@mipmap/ic_launcher_tdoa1_logo"
             android:layout_gravity="center"/>
         <TextView
             android:layout_width="wrap_content"
@@ -37,97 +37,155 @@
     </LinearLayout>
 
     <GridLayout
-        android:id="@+id/buttons_container"
+        android:id="@+id/Spinners_setup_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:columnCount="2">
+        android:columnCount="2"
+        android:paddingTop="15dp">
 
         <TextView
-            android:id="@+id/last_detected_time_label"
+            android:id="@+id/device_txt_v"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_gravity="center"
-            android:text="@string/l_detected_time" />
+            android:text="@string/device_txt" />
 
         <Spinner
             android:id="@+id/device_selection_spinner"
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:entries="@array/device_spinner_content"/>
 
         <TextView
-            android:id="@+id/detected_time_difference_label"
+            android:id="@+id/smpl_rate_txt_v"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_gravity="center"
-            android:text="@string/l_detected_difference" />
+            android:text="@string/smplRate_txt" />
 
         <Spinner
             android:id="@+id/sampling_rate_selection_spinner"
-            android:layout_width="wrap_content"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:layout_gravity="center" />
-
+            android:layout_gravity="center"
+            android:entries="@array/smpl_rate_spinner_content"/>
 
 
         <TextView
-            android:id="@+id/last_detected_time"
+            android:id="@+id/signal_time_txt_v"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_gravity="center"
-            android:text="@string/empty"
-            android:paddingBottom="10dp"/>
+            android:text="@string/signal_time_txt" />
+
+        <Spinner
+            android:id="@+id/signal_time_spinner"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:entries="@array/signal_time_spinner_content"/>
 
         <TextView
-            android:id="@+id/detected_time_difference"
+            android:id="@+id/signal_select_txt_v"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_gravity="center"
-            android:text="@string/empty"
-            android:paddingBottom="10dp"/>
+            android:text="@string/signal_select_txt" />
 
-        <Button
-            android:id="@+id/rec_button"
-            android:layout_width="0dp"
+        <Spinner
+            android:id="@+id/signal_select_spinner"
+            android:layout_width="150dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
-            android:gravity="center"
-            android:layout_gravity="fill_horizontal"
-            android:text="@string/recording_off_text" />
+            android:layout_gravity="center"
+            android:entries="@array/signal_select_spinner_content"/>
 
-        <Button
-            android:id="@+id/play_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:gravity="center"
-            android:layout_gravity="fill_horizontal"
-            android:text="@string/playing_off_text" />
-
-        <Button
-            android:id="@+id/atn_direct_enable"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:gravity="center"
-            android:layout_gravity="fill_horizontal"
-            android:text="@string/enable_p2p_button" />
-
-        <Button
-            android:id="@+id/atn_direct_discover"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:gravity="center"
-            android:layout_gravity="fill_horizontal"
-            android:text="@string/discover_peers_button" />
     </GridLayout>
+
+
+    <GridLayout
+        android:id="@+id/posXYZ_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:columnCount="3"
+        android:paddingTop="15dp">
+
+        <TextView
+            android:id="@+id/x_txt_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/X_txt" />
+
+        <TextView
+            android:id="@+id/y_txt_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/Y_txt" />
+
+        <TextView
+            android:id="@+id/z_txt_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/Z_txt" />
+
+        <EditText
+            android:id="@+id/x_EditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/X_pos_txt"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/y_EditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/Y_pos_txt"
+            android:inputType="number"/>
+
+        <EditText
+            android:id="@+id/z_EditText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/Z_pos_txt"
+            android:inputType="number"/>
+
+    </GridLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingTop="15dp">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:text="@string/start_btn_txt"
+            android:id="@+id/start_btn"/>
+
+    </LinearLayout>
 
 
 </LinearLayout>

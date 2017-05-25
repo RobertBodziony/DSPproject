@@ -34,14 +34,7 @@ import be.tarsos.dsp.pitch.PitchDetectionResult;
 import be.tarsos.dsp.pitch.PitchProcessor;
 
 public class MainActivity extends AppCompatActivity implements WifiP2pManager.ChannelListener, DeviceListFragment.DeviceActionListener, View.OnClickListener {
-    private Button rec_btn, play_btn,p2p_enable,p2p_discover;
-    private final IntentFilter intentFilter = new IntentFilter();
-    private WifiP2pManager mManager;
-    private WifiP2pManager.Channel mChannel;
-    private BroadcastReceiver mReceiver = null;
-    private boolean isWifiP2pEnabled = false;
-    private boolean retryChannel = false;
-    private TextView last_detected_t,detected_t_difference;
+    // CONSTANTS
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 432;
     private static final int MY_PERMISSIONS_REQUEST_WRITE_EXT_STR = 433;
     private static final int MY_PERMISSIONS_REQUEST_READ_EXT_STR = 434;
@@ -51,10 +44,28 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     private static final int MY_PERMISSIONS_REQUEST_ACCESS_NET_STATE = 438;
     private static final int MY_PERMISSIONS_REQUEST_CHANGE_NET_STATE = 439;
     private static final int MY_PERMISSIONS_REQUEST_CHANGE_MULT_STATE = 440;
+    public static final String EXTRA_MESSAGE_DEV = "com.example.keczaps.dsptest.EXTRA_MESSAGE_DEV";
+    public static final String EXTRA_MESSAGE_SMPL_RATE = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SMPL_RATE";
+    public static final String EXTRA_MESSAGE_SIGNAL_TIME = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SIGNAL_TIME";
+    public static final String EXTRA_MESSAGE_SIGNAL_SEL = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SIGNAL_SEL";
+    public static final String EXTRA_MESSAGE_X = "com.example.keczaps.dsptest.EXTRA_MESSAGE_X";
+    public static final String EXTRA_MESSAGE_Y = "com.example.keczaps.dsptest.EXTRA_MESSAGE_Y";
+    public static final String EXTRA_MESSAGE_Z = "com.example.keczaps.dsptest.EXTRA_MESSAGE_Z";
+
+    private Button rec_btn, play_btn,p2p_enable,p2p_discover;
+    private final IntentFilter intentFilter = new IntentFilter();
+    private WifiP2pManager mManager;
+    private WifiP2pManager.Channel mChannel;
+    private BroadcastReceiver mReceiver = null;
+    private boolean isWifiP2pEnabled = false;
+    private boolean retryChannel = false;
+    private TextView last_detected_t,detected_t_difference;
     private RecManager recManager;
     private PlayManager playManager;
     private List peers = new ArrayList();
     private SoundDetector soundDetector;
+    private String file_name;
+    private int s_rate;
 
 
     public void setIsWifiP2pEnabled(boolean isWifiP2pEnabled) {
@@ -98,7 +109,31 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         checkAppPerm(Manifest.permission.ACCESS_NETWORK_STATE, MY_PERMISSIONS_REQUEST_ACCESS_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_NETWORK_STATE, MY_PERMISSIONS_REQUEST_CHANGE_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, MY_PERMISSIONS_REQUEST_CHANGE_MULT_STATE);
-        playManager = new PlayManager(5);
+
+
+        Log.e("Spinner Dev ",getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString());
+        Log.e("Spinner Smpl ",getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString());
+        Log.e("Spinner Sig time ",getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_TIME).toString());
+        Log.e("Spinner Sig time ",getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString());
+        Log.e("EditText x ",getIntent().getExtras().get(EXTRA_MESSAGE_X).toString());
+        Log.e("EditText y",getIntent().getExtras().get(EXTRA_MESSAGE_Y).toString());
+        Log.e("EditText z",getIntent().getExtras().get(EXTRA_MESSAGE_Z).toString());
+        s_rate = Integer.parseInt(getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString());
+
+
+        if(getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString().equals("T")){
+            file_name = "A" +
+                getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString() + "25ms" +
+                getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString() +".wav";
+        } else {
+            file_name = getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString() +
+                    getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString() + "25ms" +
+                    getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString() +".wav";
+        }
+
+        Log.e("File Name ",file_name);
+
+        playManager = new PlayManager(5,file_name,Integer.parseInt(getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString()));
 
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mChannel = mManager.initialize(this, getMainLooper(), null);
@@ -138,9 +173,9 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                     rec_btn.setText(R.string.recording_on_text);
                     rec_btn.setTextColor(getResources().getColor(R.color.color_rec_on));
                     if(soundDetector == null){
-                        recManager = new RecManager();
+                        recManager = new RecManager(s_rate);
                         recManager.start();
-                        soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference);
+                        soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference,s_rate,file_name);
                         soundDetector.start();
                     } else {
                         recManager.start();

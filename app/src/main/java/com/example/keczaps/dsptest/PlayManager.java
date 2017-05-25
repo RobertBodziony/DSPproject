@@ -34,10 +34,11 @@ public class PlayManager{
     private AudioTrack audioTrack;
     private boolean isPlaying = false;
 
-    public PlayManager(int threadPoolNumberForTask) {
+    public PlayManager(int threadPoolNumberForTask,String f_name,int sample_Rate) {
         this.threadPoolNumberForTask = threadPoolNumberForTask;
-        finalGeneratedSignal = getWaveFileBytes();
-        this.genTone(2000,4000,"signal25ms441k2to3k.wav");
+        this.sampleRate = sample_Rate;
+        finalGeneratedSignal = getWaveFileBytes(f_name);
+        /*this.genTone(2000,4000,"signal25ms441k2to3k.wav");
         this.genTone(3000,5000,"signal25ms441k3to4k.wav");
         this.genTone(4000,6000,"signal25ms441k4to5k.wav");
         this.genTone(5000,7000,"signal25ms441k5to6k.wav");
@@ -57,6 +58,7 @@ public class PlayManager{
         this.genTone(3500,5500,"signal25ms221k35to45k.wav");
         this.genTone(4500,6500,"signal25ms221k45to55k.wav");
         this.genTone(5500,7500,"signal25ms221k55to65k.wav");
+        */
     }
 
     public void startPlaying() {
@@ -168,8 +170,8 @@ public class PlayManager{
     }
 
 
-    public byte[] getWaveFileBytes() {
-        Wave wave = new Wave(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/testGenerated5ms.wav");
+    public byte[] getWaveFileBytes(String f_name) {
+        Wave wave = new Wave(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/proper/"+f_name);
         return wave.getBytes();
     }
 

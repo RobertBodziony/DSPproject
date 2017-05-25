@@ -18,6 +18,7 @@ public class RecManager extends Thread {
     private static final int RECORDER_SAMPLERATE = 44100;
     private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
     private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    private int sample_rate;
     private boolean isRecording = false;
     private int frameByteSize = 4096;
     private byte[] buffer;
@@ -25,12 +26,13 @@ public class RecManager extends Thread {
     private WaveFormatManager waveFormatManager = null;
     private AudioRecord audioRecord;
 
-    public RecManager(){
-        int recBufSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
+    public RecManager(int sample_rate){
+        this.sample_rate = sample_rate;
+        int recBufSize = AudioRecord.getMinBufferSize(sample_rate, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
         if(recBufSize > frameByteSize){
-            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, recBufSize);
+            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sample_rate, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, recBufSize);
         } else {
-            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, frameByteSize);
+            this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sample_rate, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, frameByteSize);
         }
         this.buffer = new byte[frameByteSize];
         this.waveFormatManager = new WaveFormatManager();
@@ -72,7 +74,7 @@ public class RecManager extends Thread {
 
         try {
             Log.d("Starting", "Checking up directory");
-            File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "DSPtestFiles");
+            File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "DSPtestFiles/recorded");
 
             if (! mediaStorageDir.exists()) {
                 if (! mediaStorageDir.mkdir()) {
@@ -103,7 +105,7 @@ public class RecManager extends Thread {
 
         try {
             if(os != null){
-            waveFormatManager.writeWavHeader(os, RECORDER_CHANNELS, RECORDER_SAMPLERATE, RECORDER_AUDIO_ENCODING);
+            waveFormatManager.writeWavHeader(os, RECORDER_CHANNELS, sample_rate, RECORDER_AUDIO_ENCODING);
             }
         } catch (IOException e) {
             e.printStackTrace();

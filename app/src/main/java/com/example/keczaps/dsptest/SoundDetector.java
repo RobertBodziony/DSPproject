@@ -21,7 +21,7 @@ import java.util.Arrays;
 public class SoundDetector extends Thread {
 
     private boolean first = false,isRecording=false;
-    private int maxIndex = 0;
+    private int maxIndex = 0,sample_rate;
     private double[] waved,wave1d;
     private double t_last_det=0,t_now_det=0,diff,t_lastTEMP, t_nowTEMP, diffTEMP;
     private byte[] wave1b;
@@ -31,23 +31,28 @@ public class SoundDetector extends Thread {
     private Handler handler=new Handler();
     private TextView last_detected_TV,diff_detected_TV;
 
-    public SoundDetector(String name,TextView last_detected_t,TextView diff_detected) {
+    public SoundDetector(String name,TextView last_detected_t,TextView diff_detected,int sample_rate,String f_name) {
         super(name);
         //test1Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/test1full2048.wav";
         //wave1d = byte2double(wave1b);
         //Wave wave1 = new Wave(test2Path);
         //wave1b = wave1.getBytes();
 
-        test2Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/testgenerated5ms.wav";
+        this.sample_rate = sample_rate;
+        test2Path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtest/proper/"+f_name;
         Wave wave = new Wave(test2Path);
-        this.mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, 44100, AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT, 4096);
+        this.mAudioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sample_rate, AudioFormat.CHANNEL_IN_MONO,AudioFormat.ENCODING_PCM_16BIT, 4096);
         byte[] waveb = wave.getBytes();
         Log.i("WaveAndWave1 "," length waveB = "+waveb.length);
         waved = byte2double(waveb);
         Log.i("WaveAndWave1 "," length waveD = "+waved.length);
         this.last_detected_TV = last_detected_t;
         this.diff_detected_TV = diff_detected;
-        this.wave1b = new byte[2048];
+        if(sample_rate == 44100){
+            this.wave1b = new byte[2048];
+        } else {
+            this.wave1b = new byte[1024];
+        }
     }
 
     public void run() {
@@ -55,7 +60,12 @@ public class SoundDetector extends Thread {
         startRecord();
         while (isRecording) {
 
-            mAudioRecord.read(wave1b,0,2048);
+            if(sample_rate == 44100){
+                mAudioRecord.read(wave1b,0,2048);
+            } else {
+                mAudioRecord.read(wave1b,0,1024);
+            }
+
             wave1d = byte2double(wave1b);
             long t = SystemClock.currentThreadTimeMillis();
             Log.e("XCORR TIME START ", ""+t);
@@ -64,24 +74,24 @@ public class SoundDetector extends Thread {
             Log.e("XCORR TIME END   ", "" + t2);
             Log.e("XCORR TIME DIFF  ", "" + (t2 - t));
             if(result[maxIndex] > 10000) {
-                Log.i("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / 44100)*1000));
+                Log.i("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / sample_rate)*1000));
                 if(t_now_det != 0){
                     t_lastTEMP = t_now_det;
-                    t_nowTEMP = t;//+((((double) (maxIndex - waved.length)) / 44100)*1000);
+                    t_nowTEMP = t+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                     diffTEMP = t_nowTEMP - t_lastTEMP;
                     if(diffTEMP < 500){
                         Log.i("SIGNAL DETECTED ", "OUTLIER CATCHED LIKE POKEMON!");
                     } else {
                         t_last_det = t_now_det;
-                        t_now_det = t;//+((((double) (maxIndex - waved.length)) / 44100)*1000);
+                        t_now_det = t+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                         diff = t_now_det - t_last_det;
                         first = false;
                         Log.i("XCORR DETECTED ", "TIME Difference : "+t_now_det+" - ("+t_last_det+") = " + diff);
                     }
                 } else {
-                    t_now_det = t;//+((((double) (maxIndex - waved.length)) / 44100)*1000);
+                    t_now_det = t+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                     first = true;
-                    Log.i("XCORR DETECTED ", "TIME : "+(t+((((double) (maxIndex - waved.length)) / 44100)*1000)));
+                    Log.i("XCORR DETECTED ", "TIME : "+(t+((((double) (maxIndex - waved.length)) / sample_rate)*1000)));
                 }
 
                 handler.post(new Runnable(){

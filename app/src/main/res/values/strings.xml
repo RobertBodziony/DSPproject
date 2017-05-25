@@ -23,6 +23,44 @@
     <string name="group_owner_text">"GROUP OWNER : "</string>
     <string name="enable_p2p_button">SET P2P</string>
     <string name="discover_peers_button">DISCOVER</string>
+    <string name="device_txt">DEVICE</string>
+    <string name="smplRate_txt">SAMPLING RATE</string>
+    <string name="signal_time_txt">SIGNAL TIME</string>
+    <string name="signal_select_txt">SIGNAL</string>
+    <string name="start_btn_txt">START</string>
+    <string name="X_txt">X</string>
+    <string name="Y_txt">Y</string>
+    <string name="Z_txt">Z</string>
+    <string name="X_pos_txt">1.02</string>
+    <string name="Y_pos_txt">1.11</string>
+    <string name="Z_pos_txt">1.97</string>
+
+    <string-array name="device_spinner_content">
+        <item>A</item>
+        <item>B</item>
+        <item>C</item>
+        <item>D</item>
+        <item>T</item>
+    </string-array>
+
+    <string-array name="smpl_rate_spinner_content">
+        <item>44100</item>
+        <item>22050</item>
+    </string-array>
+
+    <string-array name="signal_time_spinner_content">
+        <item>25ms</item>
+        <item>50ms</item>
+    </string-array>
+
+    <string-array name="signal_select_spinner_content">
+        <item>1</item>
+        <item>2</item>
+    </string-array>
+
+
+
+
 
 
 </resources>
