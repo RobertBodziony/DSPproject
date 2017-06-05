@@ -61,7 +61,7 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mhandler = new Handler();
-        mPlayerManager = new PlayManager(7,"A4410025ms1.wav",44100);
+        mPlayerManager = new PlayManager(7,"A4410025ms1.wav",44100,1000);
         mMyServerSocketListener = new MyServerSocketListener(mContentView.findViewById(R.id.status_text),mhandler,mPlayerManager,SERVER_PORT);
     }
 

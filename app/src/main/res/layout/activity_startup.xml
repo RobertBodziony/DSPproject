@@ -108,6 +108,22 @@
             android:layout_gravity="center"
             android:entries="@array/signal_select_spinner_content"/>
 
+        <TextView
+            android:id="@+id/time_between_txt_v"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/time_between_txt" />
+
+        <Spinner
+            android:id="@+id/time_between_spinner"
+            android:layout_width="150dp"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:entries="@array/time_between_spinner_content"/>
+
     </GridLayout>
 
 

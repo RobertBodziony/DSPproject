@@ -33,10 +33,12 @@ public class PlayManager{
     private Handler playHandler = new Handler();
     private AudioTrack audioTrack;
     private boolean isPlaying = false;
+    private int timeBetweenTheSignal = 1000;
 
-    public PlayManager(int threadPoolNumberForTask,String f_name,int sample_Rate) {
+    public PlayManager(int threadPoolNumberForTask,String f_name,int sample_Rate,int time_Between) {
         this.threadPoolNumberForTask = threadPoolNumberForTask;
         this.sampleRate = sample_Rate;
+        this.timeBetweenTheSignal = time_Between;
         finalGeneratedSignal = getWaveFileBytes(f_name);
         /*this.genTone(2000,4000,"signal25ms441k2to3k.wav");
         this.genTone(3000,5000,"signal25ms441k3to4k.wav");
@@ -74,7 +76,7 @@ public class PlayManager{
                     }
                 });
             }
-        }, 0, 1, TimeUnit.SECONDS);
+        }, 0, timeBetweenTheSignal, TimeUnit.MILLISECONDS);
     }
 
     public void stopPlaying() {

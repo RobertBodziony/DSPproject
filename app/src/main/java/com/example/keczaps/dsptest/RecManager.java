@@ -23,11 +23,13 @@ public class RecManager extends Thread {
     private int frameByteSize = 4096;
     private byte[] buffer;
     private String filePath;
+    private String fileName;
     private WaveFormatManager waveFormatManager = null;
     private AudioRecord audioRecord;
 
-    public RecManager(int sample_rate){
+    public RecManager(int sample_rate,String rec_f_name){
         this.sample_rate = sample_rate;
+        this.fileName = rec_f_name;
         int recBufSize = AudioRecord.getMinBufferSize(sample_rate, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
         if(recBufSize > frameByteSize){
             this.audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, sample_rate, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, recBufSize);
@@ -37,7 +39,7 @@ public class RecManager extends Thread {
         this.buffer = new byte[frameByteSize];
         this.waveFormatManager = new WaveFormatManager();
         prepareDirectory();
-        filePath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/";
+        filePath=Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC).getPath()+"/DSPtestFiles/recorded/";
     }
 
 
@@ -91,8 +93,8 @@ public class RecManager extends Thread {
     }
 
     private void writeAudioDataToFile() {
-        String fileName = new SimpleDateFormat("yyyyMMddhhmm'.wav'").format(new Date());
-        String fname=filePath+fileName;
+        String fileNameCorrect = new SimpleDateFormat("yyyyMMddhhmm'"+fileName+"'").format(new Date());
+        String fname=filePath+fileNameCorrect;
 
         short sData[] = new short[frameByteSize/2];
 

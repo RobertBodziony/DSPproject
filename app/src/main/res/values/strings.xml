@@ -34,6 +34,7 @@
     <string name="X_pos_txt">1.02</string>
     <string name="Y_pos_txt">1.11</string>
     <string name="Z_pos_txt">1.97</string>
+    <string name="time_between_txt">TIME BETWEEN</string>
 
     <string-array name="device_spinner_content">
         <item>A</item>
@@ -57,6 +58,15 @@
         <item>1</item>
         <item>2</item>
     </string-array>
+
+    <string-array name="time_between_spinner_content">
+        <item>500</item>
+        <item>1000</item>
+        <item>2000</item>
+        <item>5000</item>
+        <item>10000</item>
+    </string-array>
+
 
 
 
