@@ -26,6 +26,7 @@ public class MyServerSocketListener {
     private PlayManager playManager;
 
 
+
     MyServerSocketListener(View statusText, Handler handler, PlayManager playManager, int serverPort) {
         this.statusText = (TextView) statusText;
         this.handler = handler;
@@ -57,11 +58,18 @@ public class MyServerSocketListener {
                             statusText.setText(inMsg);
                             if(!playManager.isPlaying()) {
                                 if(Integer.parseInt(inMsg.substring(2,3)) == 0){
-                                    playManager.startPlaying();
+                                    if(playManager.isPlaying()){
+                                        playManager.stopPlaying();
+                                        playManager.startPlayingWithCounter();
+                                    } else {
+                                        playManager.startPlayingWithCounter();
+                                    }
                                 }
                             } else {
                                 if(Integer.parseInt(inMsg.substring(2,3)) == 1){
-                                    playManager.stopPlaying();
+                                    if(playManager.isPlaying()) {
+                                        playManager.stopPlaying();
+                                    }
                                 }
                             }
                         }

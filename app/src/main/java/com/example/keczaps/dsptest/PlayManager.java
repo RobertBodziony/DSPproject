@@ -34,6 +34,7 @@ public class PlayManager{
     private AudioTrack audioTrack;
     private boolean isPlaying = false;
     private int timeBetweenTheSignal = 1000;
+    private int counter = 0;
 
     public PlayManager(int threadPoolNumberForTask,String f_name,int sample_Rate,int time_Between) {
         this.threadPoolNumberForTask = threadPoolNumberForTask;
@@ -79,11 +80,37 @@ public class PlayManager{
         }, 0, timeBetweenTheSignal, TimeUnit.MILLISECONDS);
     }
 
+    public void startPlayingWithCounter() {
+
+        audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT, generatedSnd.length, AudioTrack.MODE_STATIC);
+
+        scheduleTaskExecutor = Executors.newScheduledThreadPool(threadPoolNumberForTask);
+        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+            public void run() {
+                playHandler.post(new Runnable(){
+                    public void run(){
+                        if(counter < 100){
+                            counter++;
+                            playSound();
+                        } else {
+                            stopPlaying();
+                        }
+                    }
+                });
+            }
+        }, 0, timeBetweenTheSignal, TimeUnit.MILLISECONDS);
+    }
+
+    public void setCounterToZero(){
+        this.counter = 0;
+    }
+
     public void stopPlaying() {
         isPlaying = false;
         audioTrack.stop();
         audioTrack.release();
         scheduleTaskExecutor.shutdownNow();
+        setCounterToZero();
     }
 
     private void playSound(){

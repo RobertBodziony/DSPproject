@@ -45,8 +45,8 @@
     </string-array>
 
     <string-array name="smpl_rate_spinner_content">
-        <item>44100</item>
         <item>22050</item>
+        <item>44100</item>
     </string-array>
 
     <string-array name="signal_time_spinner_content">
@@ -60,8 +60,8 @@
     </string-array>
 
     <string-array name="time_between_spinner_content">
-        <item>500</item>
         <item>1000</item>
+        <item>500</item>
         <item>2000</item>
         <item>5000</item>
         <item>10000</item>

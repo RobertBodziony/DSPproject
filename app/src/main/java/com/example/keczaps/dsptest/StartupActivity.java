@@ -55,25 +55,9 @@ public class StartupActivity extends AppCompatActivity implements AdapterView.On
 
         device_spinner.setOnItemSelectedListener(this);
 
-        Log.e("Spinner Dev ",device_spinner.getSelectedItem().toString());
-        Log.e("Spinner Smpl ",smpl_rate_spinner.getSelectedItem().toString());
-        Log.e("Spinner Sig time ",signal_time_spinner.getSelectedItem().toString());
-        Log.e("Spinner time between",time_between_spinner.getSelectedItem().toString());
-        Log.e("EditText x ",x_editText.getText().toString());
-        Log.e("EditText y",y_editText.getText().toString());
-        Log.e("EditText z",z_editText.getText().toString());
-
         start_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.e("Spinner Dev ",device_spinner.getSelectedItem().toString());
-                Log.e("Spinner Smpl ",smpl_rate_spinner.getSelectedItem().toString());
-                Log.e("Spinner Sig time ",signal_time_spinner.getSelectedItem().toString());
-                Log.e("Spinner Sig sel ",signal_select_spinner.getSelectedItem().toString());
-                Log.e("Spinner time between",time_between_spinner.getSelectedItem().toString());
-                Log.e("EditText x ",x_editText.getText().toString());
-                Log.e("EditText y",y_editText.getText().toString());
-                Log.e("EditText z",z_editText.getText().toString());
 
                 startNewAct(device_spinner.getSelectedItem().toString(),Integer.parseInt(smpl_rate_spinner.getSelectedItem().toString()),
                         signal_time_spinner.getSelectedItem().toString(),Integer.parseInt(signal_select_spinner.getSelectedItem().toString()),

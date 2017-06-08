@@ -18,6 +18,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import be.tarsos.dsp.util.fft.FFT;
+
 public class SoundDetector extends Thread {
 
     private boolean first = false,isRecording=false;
@@ -30,6 +32,7 @@ public class SoundDetector extends Thread {
     private AudioRecord mAudioRecord;
     private Handler handler=new Handler();
     private TextView last_detected_TV,diff_detected_TV;
+    private FFT fft;
 
     public SoundDetector(String name,TextView last_detected_t,TextView diff_detected,int sample_rate,String f_name) {
         super(name);
@@ -52,8 +55,10 @@ public class SoundDetector extends Thread {
         this.diff_detected_TV = diff_detected;
         if(sample_rate == 44100){
             this.wave1b = new byte[2048];
+            Log.i("Wave1b "," length wave1b = "+wave1b.length);
         } else {
             this.wave1b = new byte[1024];
+            Log.i("Wave1b "," length wave1b = "+wave1b.length);
         }
 
     }
@@ -71,48 +76,57 @@ public class SoundDetector extends Thread {
 
             wave1d = byte2double(wave1b);
             long t = SystemClock.currentThreadTimeMillis();
-            Log.e("XCORR TIME START ", ""+t);
+            //Log.e("XCORR TIME START ", ""+t);
             double[] result = xcorr(wave1d, waved);
             long t2 = SystemClock.currentThreadTimeMillis();
-            Log.e("XCORR TIME END   ", "" + t2);
-            Log.e("XCORR TIME DIFF  ", "" + (t2 - t));
+            //Log.e("XCORR TIME END   ", "" + t2);
+            //Log.e("XCORR TIME DIFF  ", "" + (t2 - t));
             if(result[maxIndex] > 10000) {
-                Log.i("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / sample_rate)*1000));
+                Log.e("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / sample_rate)*1000));
                 if(t_now_det != 0){
                     t_lastTEMP = t_now_det;
                     t_nowTEMP = t;//+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                     diffTEMP = t_nowTEMP - t_lastTEMP;
                     if(diffTEMP < 500){
-                        Log.i("SIGNAL DETECTED ", "OUTLIER CATCHED LIKE POKEMON!");
+                        Log.e("SIGNAL DETECTED ", "OUTLIER CATCHED LIKE POKEMON!");
                     } else {
                         t_last_det = t_now_det;
                         t_now_det = t;//+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                         diff = t_now_det - t_last_det;
                         first = false;
-                        Log.i("XCORR DETECTED ", "TIME Difference : "+t_now_det+" - ("+t_last_det+") = " + diff);
+                        Log.e("XCORR DETECTED ", "TIME Difference : "+t_now_det+" - ("+t_last_det+") = " + diff);
                     }
                 } else {
                     t_now_det = t;//+((((double) (maxIndex - waved.length)) / sample_rate)*1000);
                     first = true;
-                    Log.i("XCORR DETECTED ", "TIME : "+(t));//+((((double) (maxIndex - waved.length)) / sample_rate)*1000)));
+                    Log.e("XCORR DETECTED ", "TIME : "+(t));//+((((double) (maxIndex - waved.length)) / sample_rate)*1000)));
                 }
 
                 handler.post(new Runnable(){
                     public void run(){
                         if(!first) {
-                            last_detected_TV.setText(String.format("%.4f", t_last_det));
+                            last_detected_TV.setText(String.format("%.2f", t_last_det));
                             last_detected_TV.setTextColor(Color.RED);
-                            diff_detected_TV.setText(String.format("%.4f", diff));
+                            diff_detected_TV.setText(String.format("%.2f", diff));
                             diff_detected_TV.setTextColor(Color.RED);
                         } else {
-                            last_detected_TV.setText(String.format("%.4f", t_now_det));
+                            last_detected_TV.setText(String.format("%.2f", t_now_det));
                             last_detected_TV.setTextColor(Color.RED);
                         }
                     }
                 });
 
             } else {
-                Log.i("XCORR NOT DETECTED ", " maxNum : " + result[maxIndex]);
+                if(result[maxIndex] > 1000){
+                    Log.e("XCORR NOT DETECTED ", " maxNum : " + result[maxIndex]);
+                        final double res = result[maxIndex];
+                    handler.post(new Runnable(){
+                        public void run(){
+                                last_detected_TV.setText(String.format("%.2f", res));
+                                last_detected_TV.setTextColor(Color.RED);
+                        }
+                    });
+                    }
             }
         }
     }

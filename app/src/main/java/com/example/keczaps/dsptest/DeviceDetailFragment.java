@@ -56,12 +56,39 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     private boolean amIaGroupOwner = false;
     private int messageCount = 0;
     private int SERVER_PORT = 9111;
+    public static final String EXTRA_MESSAGE_DEV = "com.example.keczaps.dsptest.EXTRA_MESSAGE_DEV";
+    public static final String EXTRA_MESSAGE_SMPL_RATE = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SMPL_RATE";
+    public static final String EXTRA_MESSAGE_SIGNAL_TIME = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SIGNAL_TIME";
+    public static final String EXTRA_MESSAGE_SIGNAL_SEL = "com.example.keczaps.dsptest.EXTRA_MESSAGE_SIGNAL_SEL";
+    public static final String EXTRA_MESSAGE_X = "com.example.keczaps.dsptest.EXTRA_MESSAGE_X";
+    public static final String EXTRA_MESSAGE_Y = "com.example.keczaps.dsptest.EXTRA_MESSAGE_Y";
+    public static final String EXTRA_MESSAGE_Z = "com.example.keczaps.dsptest.EXTRA_MESSAGE_Z";
+    public static final String EXTRA_MESSAGE_TIME_BETWEEN = "com.example.keczaps.dsptest.EXTRA_MESSAGE_TIME_BETWEEN";
+
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mhandler = new Handler();
-        mPlayerManager = new PlayManager(7,"A4410025ms1.wav",44100,1000);
+        int time_between_ms = (int) getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_TIME_BETWEEN);
+        int sample_r = (int) getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE);
+        String f_name = "";
+
+        if(getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString().equals("T")){
+            f_name = "A" +
+                    getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString() + "25ms" +
+                    getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString() +".wav";
+        } else {
+            f_name = getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString() +
+                    getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString() + "25ms" +
+                    getActivity().getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString() +".wav";
+        }
+
+        Log.e("DevDetFr","Fname = "+f_name);
+        Log.e("DevDetFr","S_rate = "+sample_r);
+        Log.e("DevDetFr","time_between = "+time_between_ms);
+
+        mPlayerManager = new PlayManager(7,f_name,sample_r,time_between_ms);
         mMyServerSocketListener = new MyServerSocketListener(mContentView.findViewById(R.id.status_text),mhandler,mPlayerManager,SERVER_PORT);
     }
 
@@ -72,6 +99,13 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
             @Override
             public void onClick(View v) {
                 WifiP2pConfig config = new WifiP2pConfig();
+                if(mWifiP2pDevice.deviceName.equals("AndroidASUS")){
+                    config.groupOwnerIntent = 1;
+                    Log.e("GROUP OWNER "," AndroidAsus GOI = 1");
+                } else {
+                    config.groupOwnerIntent = 15;
+                    Log.e("GROUP OWNER ","NO AndroidAsus GOI = 15");
+                }
                 config.deviceAddress = mWifiP2pDevice.deviceAddress;
                 config.wps.setup = WpsInfo.PBC;
                 if (mProgressDialog != null && mProgressDialog.isShowing()) {

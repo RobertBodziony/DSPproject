@@ -99,15 +99,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         checkAppPerm(Manifest.permission.CHANGE_NETWORK_STATE, MY_PERMISSIONS_REQUEST_CHANGE_NET_STATE);
         checkAppPerm(Manifest.permission.CHANGE_WIFI_MULTICAST_STATE, MY_PERMISSIONS_REQUEST_CHANGE_MULT_STATE);
 
-
-        Log.e("Spinner Dev ",getIntent().getExtras().get(EXTRA_MESSAGE_DEV).toString());
-        Log.e("Spinner Smpl ",getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString());
-        Log.e("Spinner Sig time ",getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_TIME).toString());
-        Log.e("Spinner Sig time ",getIntent().getExtras().get(EXTRA_MESSAGE_SIGNAL_SEL).toString());
-        Log.e("Spinner time between",getIntent().getExtras().get(EXTRA_MESSAGE_TIME_BETWEEN).toString());
-        Log.e("EditText x ",getIntent().getExtras().get(EXTRA_MESSAGE_X).toString());
-        Log.e("EditText y",getIntent().getExtras().get(EXTRA_MESSAGE_Y).toString());
-        Log.e("EditText z",getIntent().getExtras().get(EXTRA_MESSAGE_Z).toString());
         s_rate = Integer.parseInt(getIntent().getExtras().get(EXTRA_MESSAGE_SMPL_RATE).toString());
 
 
