@@ -6,6 +6,7 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Environment;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.os.Handler;
 import android.widget.TextView;
@@ -14,17 +15,31 @@ import com.musicg.wave.Wave;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
+import be.tarsos.dsp.AudioDispatcher;
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.filters.BandPass;
+import be.tarsos.dsp.filters.HighPass;
+import be.tarsos.dsp.filters.LowPassFS;
+import be.tarsos.dsp.filters.LowPassSP;
+import be.tarsos.dsp.io.TarsosDSPAudioFormat;
+import be.tarsos.dsp.io.android.AudioDispatcherFactory;
+import be.tarsos.dsp.pitch.Goertzel;
+import be.tarsos.dsp.pitch.Goertzel.FrequenciesDetectedHandler;
 import be.tarsos.dsp.util.fft.FFT;
+
+import static junit.framework.Assert.assertEquals;
 
 public class SoundDetector extends Thread {
 
     private boolean first = false,isRecording=false;
-    private int maxIndex = 0,sample_rate;
-    private double[] waved,wave1d;
+    private int maxIndex = 0,maxIndexFFT = 0,sample_rate;
+    private double[] waved,wave1d,fftmgn,zeros;
     private double t_last_det=0,t_now_det=0,diff,t_lastTEMP, t_nowTEMP, diffTEMP;
     private byte[] wave1b;
     private String test1Path,test2Path;
@@ -33,6 +48,7 @@ public class SoundDetector extends Thread {
     private Handler handler=new Handler();
     private TextView last_detected_TV,diff_detected_TV;
     private FFT fft;
+    private int buffer_Size = 1024 * 2;
 
     public SoundDetector(String name,TextView last_detected_t,TextView diff_detected,int sample_rate,String f_name) {
         super(name);
@@ -61,6 +77,11 @@ public class SoundDetector extends Thread {
             Log.i("Wave1b "," length wave1b = "+wave1b.length);
         }
 
+        zeros = new double[512];
+        for (int i = 0; i < zeros.length; i++) {
+            zeros[i] = 0;
+        }
+
     }
 
     public void run() {
@@ -75,13 +96,20 @@ public class SoundDetector extends Thread {
             }
 
             wave1d = byte2double(wave1b);
+            //float f = ByteBuffer.wrap(wave1b).order(ByteOrder.LITTLE_ENDIAN).getFloat();
+            //getFreqOfSound(f);
             long t = SystemClock.currentThreadTimeMillis();
-            //Log.e("XCORR TIME START ", ""+t);
+            double[] z = Arrays.copyOf(zeros,zeros.length);
+            double[] wavFFT = wave1d;
+
+            double[] fftmgn1 = fftCalculator(wavFFT,z);
+            Log.e("FFT MGN MAX ", ""+(maxIndexFFT*22050)/512);
+
             double[] result = xcorr(wave1d, waved);
             long t2 = SystemClock.currentThreadTimeMillis();
             //Log.e("XCORR TIME END   ", "" + t2);
             //Log.e("XCORR TIME DIFF  ", "" + (t2 - t));
-            if(result[maxIndex] > 10000) {
+            if(result[maxIndex] > 5000 && ((((maxIndexFFT*22050)/512) > 2500) && (((maxIndexFFT*22050)/512) < 3500 ))) {
                 Log.e("SIGNAL DETECTED ", "DETECTED MAX : " + result[maxIndex] + " | Index of Max : " + maxIndex + " | Lag : " + (maxIndex - waved.length) + " | TIME Lag : " + ((((double) (maxIndex - waved.length)) / sample_rate)*1000));
                 if(t_now_det != 0){
                     t_lastTEMP = t_now_det;
@@ -117,16 +145,9 @@ public class SoundDetector extends Thread {
                 });
 
             } else {
-                if(result[maxIndex] > 1000){
+                if(result[maxIndex] > 1000) {
                     Log.e("XCORR NOT DETECTED ", " maxNum : " + result[maxIndex]);
-                        final double res = result[maxIndex];
-                    handler.post(new Runnable(){
-                        public void run(){
-                                last_detected_TV.setText(String.format("%.2f", res));
-                                last_detected_TV.setTextColor(Color.RED);
-                        }
-                    });
-                    }
+                }
             }
         }
     }
@@ -148,6 +169,23 @@ public class SoundDetector extends Thread {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public double[] fftCalculator(double[] re, double[] im) {
+        if (re.length != im.length) return null;
+        FastFourierTransform fft = new FastFourierTransform(re.length);
+        fft.fftransform(re, im);
+        double maxVal = 0;
+        double[] fftMag = new double[re.length];
+        for (int i = 0; i < re.length; i++) {
+            fftMag[i] = Math.pow(re[i], 2) + Math.pow(im[i], 2);
+            if(fftMag[i] > maxVal) {
+                maxVal = fftMag[i];
+                maxIndexFFT = i;
+            }
+        }
+        Log.e("FFT MGN MAX ", "Index : "+maxIndexFFT+" Freq : "+(maxIndexFFT*22050)/512+" Value : "+maxVal);
+        return fftMag;
     }
 
     public void printResultToTextFile(double[] res){

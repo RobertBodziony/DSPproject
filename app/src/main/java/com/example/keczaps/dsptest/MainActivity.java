@@ -21,6 +21,10 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
+import be.tarsos.dsp.AudioEvent;
+import be.tarsos.dsp.AudioProcessor;
+import be.tarsos.dsp.util.fft.FFT;
+
 public class MainActivity extends AppCompatActivity implements WifiP2pManager.ChannelListener, DeviceListFragment.DeviceActionListener, View.OnClickListener {
     // CONSTANTS
     private static final int MY_PERMISSIONS_REQUEST_RECORD_AUDIO = 432;
@@ -156,18 +160,18 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                     rec_btn.setText(R.string.recording_on_text);
                     rec_btn.setTextColor(getResources().getColor(R.color.color_rec_on));
                     if(soundDetector == null){
-                        recManager = new RecManager(s_rate,rec_file_name);
-                        recManager.start();
+                        //recManager = new RecManager(s_rate,rec_file_name);
+                        //recManager.start();
                         soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference,s_rate, play_file_name);
                         soundDetector.start();
                     } else {
-                        recManager.start();
+                        //recManager.start();
                         soundDetector.start();
                     }
                 } else {
                     rec_btn.setText(getResources().getString(R.string.recording_off_text));
                     rec_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
-                    recManager.stopRecording();
+                    //recManager.stopRecording();
                     soundDetector.stopRecording();
                     soundDetector = null;
                     recManager = null;
@@ -186,11 +190,18 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                 }
                 break;
             case R.id.atn_direct_enable:
-                if (mManager != null && mChannel != null) {
+                if(soundDetector != null){
+                    //soundDetector.fftCalculator();
+                }
+                /*if (mManager != null && mChannel != null) {
                     startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
                 } else {
                     Log.e("WIFI p2p ", "channel or manager is null");
-                }
+                }*/
+
+
+
+
                 break;
             case R.id.atn_direct_discover:
                 if (!isWifiP2pEnabled) {
