@@ -45,14 +45,14 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
     public static final String EXTRA_MESSAGE_Z = "com.example.keczaps.dsptest.EXTRA_MESSAGE_Z";
     public static final String EXTRA_MESSAGE_TIME_BETWEEN = "com.example.keczaps.dsptest.EXTRA_MESSAGE_TIME_BETWEEN";
 
-    private Button rec_btn, play_btn,p2p_enable,p2p_discover;
+    private Button rec_btn, play_btn,p2p_discover;
     private final IntentFilter intentFilter = new IntentFilter();
     private WifiP2pManager mManager;
     private WifiP2pManager.Channel mChannel;
     private BroadcastReceiver mReceiver = null;
     private boolean isWifiP2pEnabled = false;
     private boolean retryChannel = false;
-    private TextView last_detected_t,detected_t_difference;
+    private TextView last_detected_t,detected_corr_val,detected_fft;
     private RecManager recManager;
     private PlayManager playManager;
     private List peers = new ArrayList();
@@ -85,14 +85,12 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
         play_btn = (Button) findViewById(R.id.play_button);
         play_btn.setOnClickListener(this);
         play_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
-        p2p_enable = (Button) findViewById(R.id.atn_direct_enable);
-        p2p_enable.setOnClickListener(this);
-        p2p_enable.setTextColor(getResources().getColor(R.color.color_rec_off));
         p2p_discover = (Button) findViewById(R.id.atn_direct_discover);
         p2p_discover.setOnClickListener(this);
         p2p_discover.setTextColor(getResources().getColor(R.color.color_rec_off));
         last_detected_t = (TextView) findViewById(R.id.last_detected_time);
-        detected_t_difference = (TextView) findViewById(R.id.detected_time_difference);
+        detected_corr_val = (TextView) findViewById(R.id.detected_corr_val);
+        detected_fft = (TextView) findViewById(R.id.fft_detected_tv);
         checkAppPerm(Manifest.permission.RECORD_AUDIO, MY_PERMISSIONS_REQUEST_RECORD_AUDIO);
         checkAppPerm(Manifest.permission.WRITE_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_WRITE_EXT_STR);
         checkAppPerm(Manifest.permission.READ_EXTERNAL_STORAGE, MY_PERMISSIONS_REQUEST_READ_EXT_STR);
@@ -160,18 +158,24 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                     rec_btn.setText(R.string.recording_on_text);
                     rec_btn.setTextColor(getResources().getColor(R.color.color_rec_on));
                     if(soundDetector == null){
-                        //recManager = new RecManager(s_rate,rec_file_name);
-                        //recManager.start();
-                        soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_t_difference,s_rate, play_file_name);
+                        if(getIntent().getExtras().get(EXTRA_MESSAGE_DEV).equals("T")){
+                        recManager = new RecManager(s_rate,rec_file_name);
+                        recManager.start();
+                        }
+                        soundDetector = new SoundDetector("SoundDetector",last_detected_t,detected_corr_val,detected_fft,s_rate, play_file_name);
                         soundDetector.start();
                     } else {
-                        //recManager.start();
+                        if(getIntent().getExtras().get(EXTRA_MESSAGE_DEV).equals("T")) {
+                            recManager.start();
+                        }
                         soundDetector.start();
                     }
                 } else {
                     rec_btn.setText(getResources().getString(R.string.recording_off_text));
                     rec_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
-                    //recManager.stopRecording();
+                    if(getIntent().getExtras().get(EXTRA_MESSAGE_DEV).equals("T")) {
+                        recManager.stopRecording();
+                    }
                     soundDetector.stopRecording();
                     soundDetector = null;
                     recManager = null;
@@ -188,20 +192,6 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ch
                     play_btn.setTextColor(getResources().getColor(R.color.color_rec_off));
                     playManager.stopPlaying();
                 }
-                break;
-            case R.id.atn_direct_enable:
-                if(soundDetector != null){
-                    //soundDetector.fftCalculator();
-                }
-                /*if (mManager != null && mChannel != null) {
-                    startActivity(new Intent(Settings.ACTION_WIRELESS_SETTINGS));
-                } else {
-                    Log.e("WIFI p2p ", "channel or manager is null");
-                }*/
-
-
-
-
                 break;
             case R.id.atn_direct_discover:
                 if (!isWifiP2pEnabled) {

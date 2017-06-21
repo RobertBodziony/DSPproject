@@ -24,15 +24,8 @@
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
             android:layout_gravity="center"
-            android:text="@string/l_detected_time" />
-
-        <TextView
-            android:id="@+id/detected_time_difference_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_gravity="center"
-            android:text="@string/l_detected_difference" />
+            android:text="@string/l_detected_time"
+            android:paddingBottom="10dp"/>
 
         <TextView
             android:id="@+id/last_detected_time"
@@ -44,7 +37,34 @@
             android:paddingBottom="10dp"/>
 
         <TextView
-            android:id="@+id/detected_time_difference"
+            android:id="@+id/detected_corr_val_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/l_detected_freq"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/detected_corr_val"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/empty"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/fft_detected_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_columnWeight="1"
+            android:layout_gravity="center"
+            android:text="@string/l_detected_corr_val"
+            android:paddingBottom="10dp"/>
+
+        <TextView
+            android:id="@+id/fft_detected_tv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
@@ -71,19 +91,11 @@
             android:text="@string/playing_off_text" />
 
         <Button
-            android:id="@+id/atn_direct_enable"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:gravity="center"
-            android:layout_gravity="fill_horizontal"
-            android:text="@string/enable_p2p_button" />
-
-        <Button
             android:id="@+id/atn_direct_discover"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_columnWeight="1"
+            android:layout_columnSpan="2"
             android:gravity="center"
             android:layout_gravity="fill_horizontal"
             android:text="@string/discover_peers_button" />

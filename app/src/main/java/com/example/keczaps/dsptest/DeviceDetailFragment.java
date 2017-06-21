@@ -189,21 +189,17 @@ public class DeviceDetailFragment extends Fragment implements ConnectionInfoList
     public void showDetails(WifiP2pDevice device) {
         this.mWifiP2pDevice = device;
         this.getView().setVisibility(View.VISIBLE);
-        TextView view = (TextView) mContentView.findViewById(R.id.device_address);
-        view.setText(device.deviceAddress);
-        view = (TextView) mContentView.findViewById(R.id.device_info);
-        view.setText(device.deviceName);
+        //TextView view = (TextView) mContentView.findViewById(R.id.device_address);
+        //view.setText(device.deviceAddress);
+        //view = (TextView) mContentView.findViewById(R.id.device_info);
+        //view.setText(device.deviceName);
         Log.i("Showing details ", " Device name : "+device.deviceName+" | Device address : " + device.deviceAddress);
     }
 
 
     public void resetViews() {
         mContentView.findViewById(R.id.btn_connect).setVisibility(View.VISIBLE);
-        TextView view = (TextView) mContentView.findViewById(R.id.device_address);
-        view.setText(R.string.empty);
-        view = (TextView) mContentView.findViewById(R.id.device_info);
-        view.setText(R.string.empty);
-        view = (TextView) mContentView.findViewById(R.id.group_owner);
+        TextView view = (TextView) mContentView.findViewById(R.id.group_owner);
         view.setText(R.string.empty);
         view = (TextView) mContentView.findViewById(R.id.status_text);
         view.setText(R.string.empty);

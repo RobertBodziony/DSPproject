@@ -32,9 +32,10 @@ public class PlayManager{
     private byte[] finalGeneratedSignal;
     private Handler playHandler = new Handler();
     private AudioTrack audioTrack;
-    private boolean isPlaying = false;
+    private boolean isPlaying = false,shedulTask = false;
     private int timeBetweenTheSignal = 1000;
     private int counter = 0;
+
 
     public PlayManager(int threadPoolNumberForTask,String f_name,int sample_Rate,int time_Between) {
         this.threadPoolNumberForTask = threadPoolNumberForTask;
@@ -68,16 +69,22 @@ public class PlayManager{
 
         audioTrack = new AudioTrack(AudioManager.STREAM_MUSIC, sampleRate, AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT, generatedSnd.length, AudioTrack.MODE_STATIC);
 
-        scheduleTaskExecutor = Executors.newScheduledThreadPool(threadPoolNumberForTask);
-        scheduleTaskExecutor.scheduleAtFixedRate(new Runnable() {
+        final Thread thread = new Thread(new Runnable() {
+            @Override
             public void run() {
-                playHandler.post(new Runnable(){
-                    public void run(){
-                        playSound();
-                    }
-                });
+                try {
+                    Thread.sleep(500);
+                }
+                catch(InterruptedException ex) {
+                    Log.e("Thread startPlaying() ",ex.toString());
+                    Thread.currentThread().interrupt();
+                }
+                playSound();
+                isPlaying = false;
+                shedulTask = false;
             }
-        }, 0, timeBetweenTheSignal, TimeUnit.MILLISECONDS);
+        });
+        thread.run();
     }
 
     public void startPlayingWithCounter() {
@@ -92,6 +99,7 @@ public class PlayManager{
                         if(counter < 100){
                             counter++;
                             playSound();
+                            shedulTask = true;
                         } else {
                             stopPlaying();
                         }
@@ -109,7 +117,9 @@ public class PlayManager{
         isPlaying = false;
         audioTrack.stop();
         audioTrack.release();
+        if(shedulTask){
         scheduleTaskExecutor.shutdownNow();
+        }
         setCounterToZero();
     }
 
